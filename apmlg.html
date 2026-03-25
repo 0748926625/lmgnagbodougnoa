@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APLMG | Lycée Moderne de Gnagbodougnoa</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter pour le sérieux et Plus Jakarta Sans pour la modernité -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --brand-blue: #0f172a;
+            --brand-gold: #d97706;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-title { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- BARRE DE NAVIGATION SIMPLIFIÉE POUR APLMG -->
+    <nav class="bg-white shadow-lg py-4 px-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <img src="logo.png" alt="Logo" class="h-10 w-auto">
+                <div>
+                    <h1 class="text-slate-900 font-extrabold text-lg uppercase leading-tight tracking-tighter">APLMG</h1>
+                    <p class="text-[10px] text-amber-600 font-bold uppercase tracking-widest leading-none">Amicale du Lycée Moderne de Gnagbodougnoa</p>
+                </div>
+            </div>
+            <a href="index.html" class="bg-slate-900 text-white px-6 py-2 rounded-xl hover:bg-amber-600 transition shadow-xl flex items-center gap-2">
+                <i class="fas fa-arrow-left text-sm"></i> Retour à l'accueil
+            </a>
+        </div>
+    </nav>
+
+    <!-- SECTION ÉTAT DES COTISATIONS -->
+    <section id="cotisations" class="py-24 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h4 class="text-amber-600 font-black text-xs uppercase tracking-[0.3em] mb-4 italic">Gestion des Membres</h4>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight italic">État des Cotisations</h2>
+                <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+                    Suivi des cotisations mensuelles des membres de l'amicale pour le bien-être de notre communauté enseignante.
+                </p>
+            </div>
+
+            <!-- Contrôles du tableau -->
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl mb-8 border border-slate-100" data-aos="fade-up" data-aos-delay="100">
+                <div class="flex flex-wrap gap-4 justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center cursor-pointer group">
+                            <input type="checkbox" id="showOnlyAmicale" class="mr-3 w-5 h-5 text-amber-600 rounded focus:ring-amber-500 border-2 border-slate-300">
+                            <span class="text-slate-700 font-medium group-hover:text-amber-600 transition">Afficher uniquement les membres de l'amicale</span>
+                        </label>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-slate-600 font-medium">Légende cotisations:</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-green-500 rounded-full shadow-sm"></div>
+                            <span class="text-sm text-slate-700">À jour</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-amber-500 rounded-full shadow-sm"></div>
+                            <span class="text-sm text-slate-700">En retard</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
+                            <span class="text-sm text-slate-700">Non payé</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des enseignants -->
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100" data-aos="fade-up" data-aos-delay="200">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">N°</th>
+                                <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">Nom & Prénoms</th>
+                                <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">Emploi</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">Membre Amicale</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">Cotisation Mensuelle</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTableBody" class="bg-white divide-y divide-slate-100">
+                            <!-- Les données seront insérées ici par JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Statistiques de l'amicale -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8" data-aos="fade-up" data-aos-delay="300">
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-slate-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Enseignants</p>
+                            <p id="totalTeachers" class="text-3xl font-black text-slate-900 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Membres Amicale</p>
+                            <p id="amicaleMembers" class="text-3xl font-black text-amber-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user-check text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Cotisations À jour</p>
+                            <p id="upToDatePayments" class="text-3xl font-black text-green-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Cotisations En retard</p>
+                            <p id="latePayments" class="text-3xl font-black text-amber-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION INFORMATIONS -->
+    <section id="informations" class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h4 class="text-amber-600 font-black text-xs uppercase tracking-[0.3em] mb-4 italic">APLMG</h4>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight italic">Informations Générales</h2>
+                <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+                    Découvrez l'histoire, les objectifs et les activités de l'Amicale des Personnels du Lycée Moderne de Gnagbodougnoa.
+                </p>
+            </div>
+            <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="text-2xl font-bold text-slate-900 mb-4">Notre Mission</h3>
+                <p class="text-slate-700 mb-6">
+                    L'APLMG a pour mission de renforcer les liens de camaraderie et de solidarité entre les personnels du lycée, d'améliorer leurs conditions de vie et de travail, et de contribuer au rayonnement de l'établissement.
+                </p>
+                <h3 class="text-2xl font-bold text-slate-900 mb-4">Activités</h3>
+                <ul class="list-disc list-inside text-slate-700 space-y-2">
+                    <li>Organisation d'événements sociaux et culturels.</li>
+                    <li>Mise en place de fonds de solidarité pour les membres.</li>
+                    <li>Participation à l'amélioration des infrastructures du lycée.</li>
+                    <li>Promotion de l'excellence et du bien-être au sein de la communauté éducative.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION STATUTS ET RÈGLEMENT INTÉRIEUR -->
+    <section id="statuts-reglement" class="py-24 bg-slate-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h4 class="text-amber-600 font-black text-xs uppercase tracking-[0.3em] mb-4 italic">Cadre Légal</h4>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight italic">Statuts et Règlement Intérieur</h2>
+                <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+                    Consultez les documents officiels régissant le fonctionnement de l'APLMG.
+                </p>
+            </div>
+            <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="text-2xl font-bold text-slate-900 mb-4">Statuts de l'APLMG</h3>
+                <p class="text-slate-700 mb-6">
+                    Les statuts définissent les objectifs, la structure organisationnelle, les droits et devoirs des membres, ainsi que les modalités de gestion de l'amicale.
+                </p>
+                <a href="#" class="inline-flex items-center gap-2 bg-amber-600 text-white px-6 py-3 rounded-xl hover:bg-amber-700 transition shadow-lg">
+                    <i class="fas fa-file-alt"></i> Télécharger les Statuts
+                </a>
+                
+                <h3 class="text-2xl font-bold text-slate-900 mt-10 mb-4">Règlement Intérieur</h3>
+                <p class="text-slate-700 mb-6">
+                    Le règlement intérieur complète les statuts en détaillant les règles de fonctionnement quotidien, les procédures de prise de décision et les sanctions applicables.
+                </p>
+                <a href="#" class="inline-flex items-center gap-2 bg-amber-600 text-white px-6 py-3 rounded-xl hover:bg-amber-700 transition shadow-lg">
+                    <i class="fas fa-book"></i> Télécharger le Règlement Intérieur
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER MODERNE -->
+    <footer class="bg-slate-900 pt-20 pb-10 text-white">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-16 mb-16">
+            <div>
+                <img src="logo.png" alt="Logo Footer" class="h-20 mb-6 brightness-0 invert">
+                <p class="text-slate-400 font-light leading-relaxed">
+                    Le Lycée Moderne de Gnagbodougnoa est un établissement public engagé pour la réussite de la jeunesse Ivoirienne.
+                </p>
+            </div>
+            <div>
+                <h5 class="text-xl font-bold mb-8 italic text-amber-500 tracking-tight underline decoration-white/10">Coordonnées</h5>
+                <ul class="space-y-4 text-slate-400">
+                    <li class="flex items-center gap-3"><i class="fas fa-location-dot text-amber-500"></i> Gnagbodougnoa, Gagnoa, Côte d'Ivoire</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-phone text-amber-500"></i> +225 07 47 24 84 61</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-envelope text-amber-500"></i> contact@lyceegnagbodougnoa.ci</li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-xl font-bold mb-8 italic text-amber-500 tracking-tight underline decoration-white/10">Suivez-nous</h5>
+                <div class="flex gap-4">
+                    <a href="#" class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-amber-600 transition duration-300"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-amber-600 transition duration-300"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 text-center text-xs text-slate-500 font-bold uppercase tracking-widest">
+            © 2024 Lycée Moderne de Gnagbodougnoa • Excellence - Discipline - Travail
+        </div>
+    </footer>
+
+    <!-- AOS Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Données des enseignants extraites de l'image
+        const teachersData = [
+            { id: 1, name: "NASSY KOUASSI BERNARD", role: "PROVISEUR", gender: "M", email: "nassybernard@gmail.com", contact: "0788442315" },
+            { id: 2, name: "BOHUI KOUAME JEAN LOUIS", role: "PROVISEUR ADJOINT", gender: "M", email: "bohuikouame@gmail.com", contact: "0789458412" },
+            { id: 3, name: "KOUADIO KOUAME JEAN-CLAUDE", role: "CENSEUR", gender: "M", email: "kouadiojeanclaude@gmail.com", contact: "0745784125" },
+            { id: 4, name: "KOUAME N'GUESSAN ALEX", role: "CENSEUR ADJOINT", gender: "M", email: "kouamealex@gmail.com", contact: "0785412587" },
+            { id: 5, name: "YAO KOFFI GERMAIN", role: "SURVEILLANT GENERAL", gender: "M", email: "yaogermain@gmail.com", contact: "0785412369" },
+            { id: 6, name: "KONAN ETTIE KOUADIO", role: "ADJOINT SURVEILLANT", gender: "M", email: "konanettie@gmail.com", contact: "0745896321" },
+            { id: 7, name: "TAPE BI TOHI JEAN", role: "CONSEILLER PRINCIPAL", gender: "M", email: "tapejean@gmail.com", contact: "0745874125" },
+            { id: 8, name: "ASSI KOHI GUY ROGER", role: "CONSEILLER PRINCIPAL ADJOINT", gender: "M", email: "assiguy@gmail.com", contact: "0785412547" },
+            { id: 9, name: "N'GUESSAN YAO JEAN-BAPTISTE", role: "ADJOINT DIRECTION", gender: "M", email: "nguessanbaptiste@gmail.com", contact: "0745896541" },
+            { id: 10, name: "YAPI KOFFI EDOUARD", role: "INTENDANT", gender: "M", email: "yapiedouard@gmail.com", contact: "0785412365" },
+            { id: 11, name: "DIARRASSOUBA KONE", role: "PROFESSEUR D'HG", gender: "M", email: "diarrassouba@gmail.com", contact: "0745874123" },
+            { id: 12, name: "BAKAYOKO NAMORY", role: "PROFESSEUR D'HG", gender: "M", email: "bakayokonamory@gmail.com", contact: "0785412589" },
+            { id: 13, name: "KOUADIO N'DRI YVES", role: "PROFESSEUR D'HG", gender: "M", email: "koudaoyves@gmail.com", contact: "0745896547" },
+            { id: 14, name: "KOFFI MARIE PAULE", role: "PROFESSEUR D'HG", gender: "F", email: "koffimarie@gmail.com", contact: "0785412368" },
+            { id: 15, name: "KOUAME KOUAKOU", role: "PROFESSEUR DE MATHS", gender: "M", email: "kouamekouakou@gmail.com", contact: "0745874156" },
+            { id: 16, name: "YAO KONAN ALBERT", role: "PROFESSEUR DE MATHS", gender: "M", email: "yaoalbert@gmail.com", contact: "0785412578" },
+            { id: 17, name: "NANAN KOUAME EDOUARD", role: "PROFESSEUR DE MATHS", gender: "M", email: "nanaedouard@gmail.com", contact: "0745896542" },
+            { id: 18, name: "KOUASSI N'GUESSAN REMI", role: "PROFESSEUR DE MATHS", gender: "M", email: "kouassiremi@gmail.com", contact: "0785412367" },
+            { id: 19, name: "KOFFI YAO JEAN", role: "PROFESSEUR DE MATHS", gender: "M", email: "koffijean@gmail.com", contact: "0745874129" },
+            { id: 20, name: "N'GORAN KOUAME JEAN", role: "PROFESSEUR DE PHYSIQUE", gender: "M", email: "ngoranjean@gmail.com", contact: "0785412584" },
+            { id: 21, name: "KOUAME KOFFI JOEL", role: "PROFESSEUR DE PHYSIQUE", gender: "M", email: "kouamejoel@gmail.com", contact: "0745896543" },
+            { id: 22, name: "TANO KOFI EDOUARD", role: "PROFESSEUR DE PHYSIQUE", gender: "M", email: "tanoedouard@gmail.com", contact: "0785412364" },
+            { id: 23, name: "KOFFI N'GUESSAN JULES", role: "PROFESSEUR DE CHIMIE", gender: "M", email: "koffijules@gmail.com", contact: "0745874130" },
+            { id: 24, name: "KOUADIO N'GUESSAN CHRISTIAN", role: "PROFESSEUR DE CHIMIE", gender: "M", email: "koudaiochristian@gmail.com", contact: "0785412583" },
+            { id: 25, name: "YAO KOFFI JEAN", role: "PROFESSEUR DE SVT", gender: "M", email: "yaojean2@gmail.com", contact: "0745896544" },
+            { id: 26, name: "KOUAME N'GUESSAN JEAN", role: "PROFESSEUR DE SVT", gender: "M", email: "kouamejean2@gmail.com", contact: "0785412363" },
+            { id: 27, name: "N'GUESSAN KOFFI ARMAND", role: "PROFESSEUR DE SVT", gender: "M", email: "nguessanarmand@gmail.com", contact: "0745874131" },
+            { id: 28, name: "KOFFI N'GUESSAN EDOUARD", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "koffiedouard2@gmail.com", contact: "0785412582" },
+            { id: 29, name: "KOUADIO N'GUESSAN ALBERT", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "koudaialbert@gmail.com", contact: "0745896545" },
+            { id: 30, name: "YAO KOFFI JEAN-BAPTISTE", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "yaojbaptiste@gmail.com", contact: "0785412362" },
+            { id: 31, name: "KOUAME KOFFI JOEL", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "kouamejoel2@gmail.com", contact: "0745874132" },
+            { id: 32, name: "N'GUESSAN KOFFI JEAN", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "nguessanjean2@gmail.com", contact: "0785412581" },
+            { id: 33, name: "KOUADIO KOFFI EDOUARD", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "koudaiedouard2@gmail.com", contact: "0745896546" },
+            { id: 34, name: "YAO N'GUESSAN JEAN", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "yaojean3@gmail.com", contact: "0785412361" },
+            { id: 35, name: "KOUAME KOFFI ALBERT", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "kouamealbert2@gmail.com", contact: "0745874133" },
+            { id: 36, name: "N'GORAN KOFFI EDOUARD", role: "PROFESSEUR D'ESPAGNOL", gender: "M", email: "ngoranedouard@gmail.com", contact: "0785412580" },
+            { id: 37, name: "KOFFI N'GUESSAN JEAN", role: "PROFESSEUR D'ESPAGNOL", gender: "M", email: "koffijean3@gmail.com", contact: "0745896547" },
+            { id: 38, name: "KOUADIO N'GUESSAN EDOUARD", role: "PROFESSEUR DE PHILOSOPHIE", gender: "M", email: "koudaiedouard3@gmail.com", contact: "0785412360" },
+            { id: 39, name: "YAO KOFFI JEAN", role: "PROFESSEUR DE PHILOSOPHIE", gender: "M", email: "yaojean4@gmail.com", contact: "0745874134" },
+            { id: 40, name: "KOUAME N'GUESSAN ALBERT", role: "PROFESSEUR DE PHILOSOPHIE", gender: "M", email: "kouamealbert3@gmail.com", contact: "0785412579" }
+        ];
+
+        // État des cotisations (simulé - à persister dans une vraie application)
+        let cotisationStates = {};
+        
+        // Initialiser les états des cotisations et membres amicale
+        teachersData.forEach(teacher => {
+            // Simuler des états aléatoires pour la démonstration
+            const randomState = Math.random();
+            if (randomState < 0.6) {
+                cotisationStates[teacher.id] = 'up-to-date'; // 60% à jour
+            } else if (randomState < 0.8) {
+                cotisationStates[teacher.id] = 'late'; // 20% en retard
+            } else {
+                cotisationStates[teacher.id] = 'unpaid'; // 20% non payé
+            }
+            
+            // Simuler l'appartenance à l'amicale (80% sont membres)
+            teacher.isAmicaleMember = Math.random() < 0.8;
+        });
+
+        // Fonction pour rendre le tableau
+        function renderTable(showOnlyAmicale = false) {
+            const tbody = document.getElementById('teachersTableBody');
+            tbody.innerHTML = '';
+            
+            let filteredData = teachersData;
+            if (showOnlyAmicale) {
+                filteredData = teachersData.filter(teacher => teacher.isAmicaleMember !== false);
+            }
+            
+            filteredData.forEach(teacher => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50 transition-colors duration-200';
+                
+                const cotisationState = cotisationStates[teacher.id] || 'unpaid';
+                const cotisationColors = {
+                    'up-to-date': 'bg-green-500 hover:bg-green-600',
+                    'late': 'bg-amber-500 hover:bg-amber-600',
+                    'unpaid': 'bg-red-500 hover:bg-red-600'
+                };
+                
+                const cotisationLabels = {
+                    'up-to-date': 'À jour',
+                    'late': 'En retard',
+                    'unpaid': 'Non payé'
+                };
+                
+                const cotisationIcons = {
+                    'up-to-date': 'fa-check-circle',
+                    'late': 'fa-clock',
+                    'unpaid': 'fa-times-circle'
+                };
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${teacher.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-slate-900">${teacher.name}</div>
+                        <div class="text-xs text-slate-500 mt-1">${teacher.email}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800 border border-slate-200">
+                            ${teacher.role}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <label class="flex items-center justify-center cursor-pointer">
+                            <input type="checkbox" 
+                                   class="amicale-checkbox w-5 h-5 text-amber-600 rounded focus:ring-amber-500 border-2 border-slate-300 focus:border-amber-500" 
+                                   data-teacher-id="${teacher.id}"
+                                   ${teacher.isAmicaleMember !== false ? 'checked' : ''}>
+                        </label>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button class="cotisation-btn w-10 h-10 rounded-full ${cotisationColors[cotisationState]} text-white transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 shadow-lg"
+                                data-teacher-id="${teacher.id}"
+                                data-state="${cotisationState}"
+                                title="${cotisationLabels[cotisationState]} - Cliquer pour changer l'état">
+                            <i class="fas ${cotisationIcons[cotisationState]} text-sm"></i>
+                        </button>
+                        <div class="mt-2">
+                            <span class="text-xs font-medium text-slate-700">${cotisationLabels[cotisationState]}</span>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            updateStatistics();
+            attachEventListeners();
+        }
+
+        // Fonction pour mettre à jour les statistiques
+        function updateStatistics() {
+            const totalTeachers = teachersData.length;
+            const amicaleMembers = teachersData.filter(t => t.isAmicaleMember !== false).length;
+            const upToDatePayments = Object.values(cotisationStates).filter(state => state === 'up-to-date').length;
+            const latePayments = Object.values(cotisationStates).filter(state => state === 'late').length;
+            
+            document.getElementById('totalTeachers').textContent = totalTeachers;
+            document.getElementById('amicaleMembers').textContent = amicaleMembers;
+            document.getElementById('upToDatePayments').textContent = upToDatePayments;
+            document.getElementById('latePayments').textContent = latePayments;
+        }
+
+        // Fonction pour attacher les écouteurs d'événements
+        function attachEventListeners() {
+            // Gestion des cases à cocher amicale
+            document.querySelectorAll('.amicale-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const teacherId = parseInt(this.dataset.teacherId);
+                    const teacher = teachersData.find(t => t.id === teacherId);
+                    if (teacher) {
+                        teacher.isAmicaleMember = this.checked;
+                        updateStatistics();
+                        
+                        // Animation feedback
+                        this.parentElement.parentElement.classList.add('scale-110');
+                        setTimeout(() => {
+                            this.parentElement.parentElement.classList.remove('scale-110');
+                        }, 200);
+                    }
+                });
+            });
+            
+            // Gestion des boutons de cotisation
+            document.querySelectorAll('.cotisation-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const teacherId = parseInt(this.dataset.teacherId);
+                    const currentState = this.dataset.state;
+                    
+                    // Cycle : up-to-date -> late -> unpaid -> up-to-date
+                    let nextState;
+                    if (currentState === 'up-to-date') {
+                        nextState = 'late';
+                    } else if (currentState === 'late') {
+                        nextState = 'unpaid';
+                    } else {
+                        nextState = 'up-to-date';
+                    }
+                    
+                    // Mettre à jour l'état
+                    cotisationStates[teacherId] = nextState;
+                    
+                    // Mettre à jour l'interface
+                    const colors = {
+                        'up-to-date': 'bg-green-500 hover:bg-green-600',
+                        'late': 'bg-amber-500 hover:bg-amber-600',
+                        'unpaid': 'bg-red-500 hover:bg-red-600'
+                    };
+                    
+                    const labels = {
+                        'up-to-date': 'À jour',
+                        'late': 'En retard',
+                        'unpaid': 'Non payé'
+                    };
+                    
+                    const icons = {
+                        'up-to-date': 'fa-check-circle',
+                        'late': 'fa-clock',
+                        'unpaid': 'fa-times-circle'
+                    };
+                    
+                    this.className = `cotisation-btn w-10 h-10 rounded-full ${colors[nextState]} text-white transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 shadow-lg`;
+                    this.dataset.state = nextState;
+                    this.title = `${labels[nextState]} - Cliquer pour changer l'état`;
+                    this.innerHTML = `<i class="fas ${icons[nextState]} text-sm"></i>`;
+                    
+                    // Mettre à jour le label
+                    const labelSpan = this.nextElementSibling.querySelector('span');
+                    if (labelSpan) {
+                        labelSpan.textContent = labels[nextState];
+                    }
+                    
+                    updateStatistics();
+                    
+                    // Animation feedback
+                    this.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        this.classList.remove('animate-pulse');
+                    }, 500);
+                });
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 1000, once: true });
+            
+            // Rendre le tableau initial
+            renderTable();
+            
+            // Gestion du filtre amicale
+            document.getElementById('showOnlyAmicale').addEventListener('change', function() {
+                renderTable(this.checked);
+            });
+        });
+    </script>
+</body>
+</html>
