@@ -7,6 +7,34 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDK (Version Modulaire) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+
+        // CONFIGURATION FIREBASE (À copier depuis les paramètres de votre projet dans la console Firebase)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuyRbqvczK00mP0dPbXSB9EoGvELJ0OrA",
+            authDomain: "lmgnagbodougnoa-ae253.firebaseapp.com",
+            projectId: "lmgnagbodougnoa-ae253",
+            storageBucket: "lmgnagbodougnoa-ae253.firebasestorage.app",
+            messagingSenderId: "357402116423",
+            appId: "1:357402116423:web:05d85abf8889adcb4b4c62",
+            measurementId: "G-Q4KTZ4DN1P"
+        };
+
+        // Initialisation
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
+        // Exposition des fonctions pour le script classique
+        window.firebaseDB = db;
+        window.fs = { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot };
+    </script>
+
     <!-- Google Fonts: Inter pour le sérieux et Plus Jakarta Sans pour la modernité -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -25,6 +53,39 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
 
+    <!-- ÉCRAN DE LOGIN -->
+    <div id="loginOverlay" class="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 text-center" data-aos="zoom-in">
+            <img src="logo.png" alt="Logo" class="h-20 mx-auto mb-6">
+            <h2 class="text-3xl font-black text-slate-900 mb-2">Espace APLMG</h2>
+            <p class="text-slate-500 text-sm mb-6 font-medium">Choisissez votre type d'accès</p>
+            
+            <form id="loginForm" class="space-y-4">
+                <div class="text-left space-y-1">
+                    <label class="text-[10px] font-black uppercase text-slate-400 px-2 tracking-widest">Type d'accès</label>
+                    <select id="accessType" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                        <option value="member">👤 Membre de l'amicale</option>
+                        <option value="admin">🔧 Administrateur</option>
+                    </select>
+                </div>
+                <div class="text-left space-y-1">
+                    <label class="text-[10px] font-black uppercase text-slate-400 px-2 tracking-widest">Mot de passe</label>
+                    <input type="password" id="password" autocomplete="current-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-amber-500 transition-colors">
+                </div>
+                <div id="loginError" class="hidden text-red-500 text-[11px] font-bold italic pt-2">Mot de passe incorrect. Veuillez réessayer.</div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-amber-600 transition shadow-xl mt-4 uppercase tracking-widest text-xs">
+                    Se connecter
+                </button>
+            </form>
+            <a href="index.html" class="inline-block mt-8 text-slate-400 hover:text-amber-600 transition text-xs font-bold uppercase tracking-widest">
+                <i class="fas fa-arrow-left mr-2"></i> Retour au site public
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTENU PRINCIPAL (Masqué par défaut) -->
+    <div id="mainContent" class="hidden">
+
     <!-- BARRE DE NAVIGATION SIMPLIFIÉE POUR APLMG -->
     <nav class="bg-white shadow-lg py-4 px-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -35,11 +96,246 @@
                     <p class="text-[10px] text-amber-600 font-bold uppercase tracking-widest leading-none">Amicale du Lycée Moderne de Gnagbodougnoa</p>
                 </div>
             </div>
-            <a href="index.html" class="bg-slate-900 text-white px-6 py-2 rounded-xl hover:bg-amber-600 transition shadow-xl flex items-center gap-2">
-                <i class="fas fa-arrow-left text-sm"></i> Retour à l'accueil
-            </a>
+            <div class="flex items-center gap-4">
+                <!-- Navigation par onglets (admin seulement) -->
+                <div id="adminTabs" class="hidden flex items-center gap-2 bg-slate-100 rounded-xl p-1">
+                    <button id="tabCotisations" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-white text-slate-900 shadow-sm">
+                        <i class="fas fa-users mr-2"></i>Membres
+                    </button>
+                    <button id="tabAnnuelle" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-600 hover:text-slate-900">
+                        <i class="fas fa-calendar mr-2"></i>Vue Annuelle
+                    </button>
+                </div>
+                <a href="index.html" class="bg-slate-900 text-white px-6 py-2 rounded-xl hover:bg-amber-600 transition shadow-xl flex items-center gap-2">
+                    <i class="fas fa-arrow-left text-sm"></i> Retour à l'accueil
+                </a>
+            </div>
         </div>
     </nav>
+
+    <!-- SECTION VUE MENSUELLE (ADMIN ONLY) -->
+    <section id="vueMensuelle" class="py-24 bg-gradient-to-br from-amber-50 to-orange-50 hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h4 class="text-amber-600 font-black text-xs uppercase tracking-[0.3em] mb-4 italic">Vue Mensuelle</h4>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight italic">Suivi des Cotisations Mensuelles</h2>
+                <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+                    Vue d'ensemble des paiements mensuels de tous les membres pour l'année en cours.
+                </p>
+            </div>
+
+            <!-- Sélection de l'année et du mois -->
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl mb-8 border border-slate-100" data-aos="fade-up" data-aos-delay="100">
+                <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <label class="text-slate-700 font-medium">Année:</label>
+                        <select id="yearSelectMonthly" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-amber-500">
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <label class="text-slate-700 font-medium">Mois:</label>
+                        <select id="monthSelect" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-amber-500">
+                            <option value="1">Janvier</option>
+                            <option value="2">Février</option>
+                            <option value="3">Mars</option>
+                            <option value="4">Avril</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juin</option>
+                            <option value="7">Juillet</option>
+                            <option value="8">Août</option>
+                            <option value="9">Septembre</option>
+                            <option value="10">Octobre</option>
+                            <option value="11">Novembre</option>
+                            <option value="12">Décembre</option>
+                        </select>
+                    </div>
+                    <button id="refreshMonthlyView" class="bg-amber-600 text-white px-4 py-2 rounded-xl hover:bg-amber-700 transition flex items-center gap-2 text-sm font-bold">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tableau mensuel des paiements -->
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100" data-aos="fade-up" data-aos-delay="200">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">N°</th>
+                                <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">Nom & Prénoms</th>
+                                <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">Matricule</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">Statut Membre</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">Paiement Mois</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">État Général</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider italic">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyTableBody" class="bg-white divide-y divide-slate-100">
+                            <!-- Les données mensuelles seront insérées ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Statistiques mensuelles -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8" data-aos="fade-up" data-aos-delay="300">
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-slate-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Membres</p>
+                            <p id="monthlyTotalMembers" class="text-3xl font-black text-slate-900 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Payés ce mois</p>
+                            <p id="monthlyPaid" class="text-3xl font-black text-green-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">En retard</p>
+                            <p id="monthlyLate" class="text-3xl font-black text-amber-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-clock text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Non payés</p>
+                            <p id="monthlyUnpaid" class="text-3xl font-black text-red-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-times-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION VUE SYNTHÉTIQUE ANNUELLE (ADMIN ONLY) -->
+    <section id="vueAnnuelle" class="py-24 bg-gradient-to-br from-amber-50 to-orange-50 hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h4 class="text-amber-600 font-black text-xs uppercase tracking-[0.3em] mb-4 italic">Vue Annuelle</h4>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight italic">Suivi des Cotisations Mensuelles</h2>
+                <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+                    Vue d'ensemble des paiements mensuels de tous les membres pour l'année complète.
+                </p>
+            </div>
+
+            <!-- Sélection de l'année -->
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl mb-8 border border-slate-100" data-aos="fade-up" data-aos-delay="100">
+                <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <label class="text-slate-700 font-medium">Année:</label>
+                        <select id="yearSelect" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-amber-500">
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <button id="refreshAnnualView" class="bg-amber-600 text-white px-4 py-2 rounded-xl hover:bg-amber-700 transition flex items-center gap-2 text-sm font-bold">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tableau synthétique annuel -->
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100" data-aos="fade-up" data-aos-delay="200">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-black uppercase tracking-wider sticky left-0 bg-amber-600">Nom & Prénoms</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">JAN</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">FEV</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">MAR</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">AVR</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">MAI</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">JUI</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">JUL</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">AOU</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">SEP</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">OCT</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">NOV</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">DEC</th>
+                                <th class="px-2 py-3 text-center text-xs font-black uppercase tracking-wider">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annualTableBody" class="bg-white divide-y divide-slate-100">
+                            <!-- Les données annuelles seront insérées ici -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Statistiques annuelles -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8" data-aos="fade-up" data-aos-delay="300">
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-slate-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Membres</p>
+                            <p id="annualTotalMembers" class="text-3xl font-black text-slate-900 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Payements</p>
+                            <p id="annualTotalPaid" class="text-3xl font-black text-green-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">Taux de Paiement</p>
+                            <p id="annualPaymentRate" class="text-3xl font-black text-amber-600 mt-1">0%</p>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-percentage text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-lg border-l-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider">En Retard</p>
+                            <p id="annualTotalUnpaid" class="text-3xl font-black text-red-600 mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-times-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- SECTION ÉTAT DES COTISATIONS -->
     <section id="cotisations" class="py-24 bg-gradient-to-br from-slate-50 to-blue-50">
@@ -52,14 +348,20 @@
                 </p>
             </div>
 
-            <!-- Contrôles du tableau -->
+            <!-- Contrôles du tableau et Formulaire d'ajout -->
             <div class="bg-white p-6 rounded-[2rem] shadow-xl mb-8 border border-slate-100" data-aos="fade-up" data-aos-delay="100">
-                <div class="flex flex-wrap gap-4 justify-between items-center">
+                <div class="flex flex-wrap gap-6 justify-between items-center">
                     <div class="flex items-center space-x-4">
                         <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" id="showOnlyAmicale" class="mr-3 w-5 h-5 text-amber-600 rounded focus:ring-amber-500 border-2 border-slate-300">
+                            <input type="checkbox" id="showOnlyAmicale" checked class="mr-3 w-5 h-5 text-amber-600 rounded focus:ring-amber-500 border-2 border-slate-300">
                             <span class="text-slate-700 font-medium group-hover:text-amber-600 transition">Afficher uniquement les membres de l'amicale</span>
                         </label>
+                        <button id="toggleAddForm" class="bg-slate-900 text-white px-4 py-2 rounded-xl hover:bg-amber-600 transition flex items-center gap-2 text-sm font-bold">
+                            <i class="fas fa-plus"></i> Ajouter un membre
+                        </button>
+                        <button id="checkFirebase" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition flex items-center gap-2 text-sm font-bold">
+                            <i class="fas fa-database"></i> Vérifier Firebase
+                        </button>
                     </div>
                     <div class="flex items-center space-x-4">
                         <span class="text-sm text-slate-600 font-medium">Légende cotisations:</span>
@@ -77,6 +379,29 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Formulaire d'ajout (caché par défaut) -->
+                <div id="addMemberForm" class="hidden mt-8 pt-8 border-t border-slate-100">
+                    <form id="newTeacherForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400 px-2">Nom & Prénoms</label>
+                            <input type="text" id="newName" autocomplete="name" required placeholder="Ex: KOFFI KAN" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400 px-2">Emploi / Fonction</label>
+                            <input type="text" id="newRole" autocomplete="organization-title" required placeholder="Ex: Professeur de SVT" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400 px-2">Email</label>
+                            <input type="email" id="newEmail" autocomplete="email" placeholder="email@exemple.com" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 transition shadow-lg shadow-amber-600/20">
+                                Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Tableau des enseignants -->
@@ -90,6 +415,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-wider">Emploi</th>
                                 <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">Membre Amicale</th>
                                 <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider">Cotisation Mensuelle</th>
+                                <th class="px-6 py-4 text-center text-xs font-black uppercase tracking-wider italic">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="teachersTableBody" class="bg-white divide-y divide-slate-100">
@@ -219,7 +545,7 @@
                 <ul class="space-y-4 text-slate-400">
                     <li class="flex items-center gap-3"><i class="fas fa-location-dot text-amber-500"></i> Gnagbodougnoa, Gagnoa, Côte d'Ivoire</li>
                     <li class="flex items-center gap-3"><i class="fas fa-phone text-amber-500"></i> +225 07 47 24 84 61</li>
-                    <li class="flex items-center gap-3"><i class="fas fa-envelope text-amber-500"></i> contact@lyceegnagbodougnoa.ci</li>
+                    <li class="flex items-center gap-3"><i class="fas fa-envelope text-amber-500"></i> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dab9b5b4aebbb9ae9ab6a3b9bfbfbdb4bbbdb8b5beb5afbdb4b5bbf4b9b3">[email&#160;protected]</a></li>
                 </ul>
             </div>
             <div>
@@ -236,70 +562,102 @@
     </footer>
 
     <!-- AOS Script -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // Données des enseignants extraites de l'image
-        const teachersData = [
-            { id: 1, name: "NASSY KOUASSI BERNARD", role: "PROVISEUR", gender: "M", email: "nassybernard@gmail.com", contact: "0788442315" },
-            { id: 2, name: "BOHUI KOUAME JEAN LOUIS", role: "PROVISEUR ADJOINT", gender: "M", email: "bohuikouame@gmail.com", contact: "0789458412" },
-            { id: 3, name: "KOUADIO KOUAME JEAN-CLAUDE", role: "CENSEUR", gender: "M", email: "kouadiojeanclaude@gmail.com", contact: "0745784125" },
-            { id: 4, name: "KOUAME N'GUESSAN ALEX", role: "CENSEUR ADJOINT", gender: "M", email: "kouamealex@gmail.com", contact: "0785412587" },
-            { id: 5, name: "YAO KOFFI GERMAIN", role: "SURVEILLANT GENERAL", gender: "M", email: "yaogermain@gmail.com", contact: "0785412369" },
-            { id: 6, name: "KONAN ETTIE KOUADIO", role: "ADJOINT SURVEILLANT", gender: "M", email: "konanettie@gmail.com", contact: "0745896321" },
-            { id: 7, name: "TAPE BI TOHI JEAN", role: "CONSEILLER PRINCIPAL", gender: "M", email: "tapejean@gmail.com", contact: "0745874125" },
-            { id: 8, name: "ASSI KOHI GUY ROGER", role: "CONSEILLER PRINCIPAL ADJOINT", gender: "M", email: "assiguy@gmail.com", contact: "0785412547" },
-            { id: 9, name: "N'GUESSAN YAO JEAN-BAPTISTE", role: "ADJOINT DIRECTION", gender: "M", email: "nguessanbaptiste@gmail.com", contact: "0745896541" },
-            { id: 10, name: "YAPI KOFFI EDOUARD", role: "INTENDANT", gender: "M", email: "yapiedouard@gmail.com", contact: "0785412365" },
-            { id: 11, name: "DIARRASSOUBA KONE", role: "PROFESSEUR D'HG", gender: "M", email: "diarrassouba@gmail.com", contact: "0745874123" },
-            { id: 12, name: "BAKAYOKO NAMORY", role: "PROFESSEUR D'HG", gender: "M", email: "bakayokonamory@gmail.com", contact: "0785412589" },
-            { id: 13, name: "KOUADIO N'DRI YVES", role: "PROFESSEUR D'HG", gender: "M", email: "koudaoyves@gmail.com", contact: "0745896547" },
-            { id: 14, name: "KOFFI MARIE PAULE", role: "PROFESSEUR D'HG", gender: "F", email: "koffimarie@gmail.com", contact: "0785412368" },
-            { id: 15, name: "KOUAME KOUAKOU", role: "PROFESSEUR DE MATHS", gender: "M", email: "kouamekouakou@gmail.com", contact: "0745874156" },
-            { id: 16, name: "YAO KONAN ALBERT", role: "PROFESSEUR DE MATHS", gender: "M", email: "yaoalbert@gmail.com", contact: "0785412578" },
-            { id: 17, name: "NANAN KOUAME EDOUARD", role: "PROFESSEUR DE MATHS", gender: "M", email: "nanaedouard@gmail.com", contact: "0745896542" },
-            { id: 18, name: "KOUASSI N'GUESSAN REMI", role: "PROFESSEUR DE MATHS", gender: "M", email: "kouassiremi@gmail.com", contact: "0785412367" },
-            { id: 19, name: "KOFFI YAO JEAN", role: "PROFESSEUR DE MATHS", gender: "M", email: "koffijean@gmail.com", contact: "0745874129" },
-            { id: 20, name: "N'GORAN KOUAME JEAN", role: "PROFESSEUR DE PHYSIQUE", gender: "M", email: "ngoranjean@gmail.com", contact: "0785412584" },
-            { id: 21, name: "KOUAME KOFFI JOEL", role: "PROFESSEUR DE PHYSIQUE", gender: "M", email: "kouamejoel@gmail.com", contact: "0745896543" },
-            { id: 22, name: "TANO KOFI EDOUARD", role: "PROFESSEUR DE PHYSIQUE", gender: "M", email: "tanoedouard@gmail.com", contact: "0785412364" },
-            { id: 23, name: "KOFFI N'GUESSAN JULES", role: "PROFESSEUR DE CHIMIE", gender: "M", email: "koffijules@gmail.com", contact: "0745874130" },
-            { id: 24, name: "KOUADIO N'GUESSAN CHRISTIAN", role: "PROFESSEUR DE CHIMIE", gender: "M", email: "koudaiochristian@gmail.com", contact: "0785412583" },
-            { id: 25, name: "YAO KOFFI JEAN", role: "PROFESSEUR DE SVT", gender: "M", email: "yaojean2@gmail.com", contact: "0745896544" },
-            { id: 26, name: "KOUAME N'GUESSAN JEAN", role: "PROFESSEUR DE SVT", gender: "M", email: "kouamejean2@gmail.com", contact: "0785412363" },
-            { id: 27, name: "N'GUESSAN KOFFI ARMAND", role: "PROFESSEUR DE SVT", gender: "M", email: "nguessanarmand@gmail.com", contact: "0745874131" },
-            { id: 28, name: "KOFFI N'GUESSAN EDOUARD", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "koffiedouard2@gmail.com", contact: "0785412582" },
-            { id: 29, name: "KOUADIO N'GUESSAN ALBERT", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "koudaialbert@gmail.com", contact: "0745896545" },
-            { id: 30, name: "YAO KOFFI JEAN-BAPTISTE", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "yaojbaptiste@gmail.com", contact: "0785412362" },
-            { id: 31, name: "KOUAME KOFFI JOEL", role: "PROFESSEUR DE FRANÇAIS", gender: "M", email: "kouamejoel2@gmail.com", contact: "0745874132" },
-            { id: 32, name: "N'GUESSAN KOFFI JEAN", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "nguessanjean2@gmail.com", contact: "0785412581" },
-            { id: 33, name: "KOUADIO KOFFI EDOUARD", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "koudaiedouard2@gmail.com", contact: "0745896546" },
-            { id: 34, name: "YAO N'GUESSAN JEAN", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "yaojean3@gmail.com", contact: "0785412361" },
-            { id: 35, name: "KOUAME KOFFI ALBERT", role: "PROFESSEUR D'ANGLAIS", gender: "M", email: "kouamealbert2@gmail.com", contact: "0745874133" },
-            { id: 36, name: "N'GORAN KOFFI EDOUARD", role: "PROFESSEUR D'ESPAGNOL", gender: "M", email: "ngoranedouard@gmail.com", contact: "0785412580" },
-            { id: 37, name: "KOFFI N'GUESSAN JEAN", role: "PROFESSEUR D'ESPAGNOL", gender: "M", email: "koffijean3@gmail.com", contact: "0745896547" },
-            { id: 38, name: "KOUADIO N'GUESSAN EDOUARD", role: "PROFESSEUR DE PHILOSOPHIE", gender: "M", email: "koudaiedouard3@gmail.com", contact: "0785412360" },
-            { id: 39, name: "YAO KOFFI JEAN", role: "PROFESSEUR DE PHILOSOPHIE", gender: "M", email: "yaojean4@gmail.com", contact: "0745874134" },
-            { id: 40, name: "KOUAME N'GUESSAN ALBERT", role: "PROFESSEUR DE PHILOSOPHIE", gender: "M", email: "kouamealbert3@gmail.com", contact: "0785412579" }
-        ];
-
-        // État des cotisations (simulé - à persister dans une vraie application)
+        // État dynamique depuis Firestore
+        let teachersData = [];
         let cotisationStates = {};
+        let currentUserType = null; // 'member' ou 'admin'
         
-        // Initialiser les états des cotisations et membres amicale
-        teachersData.forEach(teacher => {
-            // Simuler des états aléatoires pour la démonstration
-            const randomState = Math.random();
-            if (randomState < 0.6) {
-                cotisationStates[teacher.id] = 'up-to-date'; // 60% à jour
-            } else if (randomState < 0.8) {
-                cotisationStates[teacher.id] = 'late'; // 20% en retard
-            } else {
-                cotisationStates[teacher.id] = 'unpaid'; // 20% non payé
-            }
+        // Mot de passe unique pour chaque type d'accès
+        const ACCESS_PASSWORDS = {
+            member: 'APLMG2025', // Mot de passe pour les membres
+            admin: 'ADMIN2025'   // Mot de passe pour les administrateurs
+        };
+        
+        async function syncWithFirebase() {
+            console.log("Tentative de connexion à Firebase...");
+            console.log("Firebase DB:", window.firebaseDB);
             
-            // Simuler l'appartenance à l'amicale (80% sont membres)
-            teacher.isAmicaleMember = Math.random() < 0.8;
-        });
+            // Données de secours si Firebase est bloqué
+            const fallbackData = [
+                { firebaseId: "fallback1", name: "NASSY KOUASSI BERNARD", role: "PROVISEUR", matricule: "LMG001", isAmicaleMember: true, cotisationState: 'up-to-date' },
+                { firebaseId: "fallback2", name: "BOHUI KOUAME JEAN LOUIS", role: "PROVISEUR ADJOINT", matricule: "LMG002", isAmicaleMember: true, cotisationState: 'up-to-date' },
+                { firebaseId: "fallback3", name: "KOUADIO KOUAME JEAN-CLAUDE", role: "CENSEUR", matricule: "LMG003", isAmicaleMember: true, cotisationState: 'late' },
+                { firebaseId: "fallback4", name: "YAO KOFFI GERMAIN", role: "SURVEILLANT GENERAL", matricule: "LMG004", isAmicaleMember: true, cotisationState: 'up-to-date' },
+                { firebaseId: "fallback5", name: "KOFFI MARIE PAULE", role: "PROFESSEUR D'HG", matricule: "LMG005", isAmicaleMember: true, cotisationState: 'unpaid' }
+            ];
+            
+            try {
+                const colRef = window.fs.collection(window.firebaseDB, "membres");
+                console.log("Référence collection créée:", colRef);
+                
+                window.fs.onSnapshot(colRef, (snapshot) => {
+                    console.log("Snapshot reçu:", snapshot);
+                    console.log("Nombre de documents:", snapshot.docs.length);
+                    
+                    if (snapshot.docs.length > 0) {
+                        teachersData = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+                        console.log("Données Firebase chargées:", teachersData);
+                        
+                        // Afficher les matricules disponibles pour le débogage
+                        console.log(" Matricules disponibles:");
+                        try {
+                            teachersData.forEach((teacher, index) => {
+                                console.log(`${index + 1}. ${teacher.name} -> Matricule: "${teacher.matricule}"`);
+                            });
+                        } catch (error) {
+                            console.error("Erreur dans l'affichage des matricules:", error);
+                            teachersData.forEach((teacher, index) => {
+                                console.log(`${index + 1}. Nom: ${teacher.name}, Matricule: ${teacher.matricule}`);
+                            });
+                        }
+                    } else {
+                        // Utiliser les données de secours si la base est vide
+                        teachersData = fallbackData;
+                        console.log("Utilisation des données de secours (base vide):", teachersData);
+                    }
+                    
+                    console.log(" Mise à jour des états de cotisation...");
+                    teachersData.forEach(t => { cotisationStates[t.firebaseId] = t.cotisationState || 'unpaid'; });
+                    
+                    console.log(" Rendu du tableau...");
+                    try {
+                        renderTable(document.getElementById('showOnlyAmicale').checked);
+                        console.log(" Tableau rendu avec succès");
+                    } catch (error) {
+                        console.error(" Erreur lors du rendu du tableau:", error);
+                    }
+                }, (error) => {
+                    console.error("Erreur Firebase:", error);
+                    console.log("Utilisation des données de secours à cause de l'erreur:", error.message);
+                    
+                    // Utiliser les données de secours en cas d'erreur
+                    teachersData = fallbackData;
+                    teachersData.forEach(t => { cotisationStates[t.firebaseId] = t.cotisationState || 'unpaid'; });
+                    renderTable(document.getElementById('showOnlyAmicale').checked);
+                });
+                
+                // Timeout de secours si Firebase ne répond pas
+                setTimeout(() => {
+                    if (teachersData.length === 0) {
+                        console.log("Timeout Firebase - Utilisation des données de secours");
+                        teachersData = fallbackData;
+                        teachersData.forEach(t => { cotisationStates[t.firebaseId] = t.cotisationState || 'unpaid'; });
+                        renderTable(document.getElementById('showOnlyAmicale').checked);
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                console.error("Erreur lors de l'initialisation:", error);
+                console.log("Utilisation des données de secours à cause de l'erreur d'initialisation:", error.message);
+                
+                // Utiliser les données de secours en cas d'erreur
+                teachersData = fallbackData;
+                teachersData.forEach(t => { cotisationStates[t.firebaseId] = t.cotisationState || 'unpaid'; });
+                renderTable(document.getElementById('showOnlyAmicale').checked);
+            }
+        }
 
         // Fonction pour rendre le tableau
         function renderTable(showOnlyAmicale = false) {
@@ -315,7 +673,7 @@
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-slate-50 transition-colors duration-200';
                 
-                const cotisationState = cotisationStates[teacher.id] || 'unpaid';
+                const cotisationState = teacher.cotisationState || 'unpaid';
                 const cotisationColors = {
                     'up-to-date': 'bg-green-500 hover:bg-green-600',
                     'late': 'bg-amber-500 hover:bg-amber-600',
@@ -335,10 +693,9 @@
                 };
                 
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${teacher.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${filteredData.indexOf(teacher) + 1}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-slate-900">${teacher.name}</div>
-                        <div class="text-xs text-slate-500 mt-1">${teacher.email}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800 border border-slate-200">
@@ -349,20 +706,22 @@
                         <label class="flex items-center justify-center cursor-pointer">
                             <input type="checkbox" 
                                    class="amicale-checkbox w-5 h-5 text-amber-600 rounded focus:ring-amber-500 border-2 border-slate-300 focus:border-amber-500" 
-                                   data-teacher-id="${teacher.id}"
-                                   ${teacher.isAmicaleMember !== false ? 'checked' : ''}>
+                                   data-fb-id="${teacher.firebaseId}"
+                                   ${teacher.isAmicaleMember ? 'checked' : ''}>
                         </label>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         <button class="cotisation-btn w-10 h-10 rounded-full ${cotisationColors[cotisationState]} text-white transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 shadow-lg"
-                                data-teacher-id="${teacher.id}"
+                                data-fb-id="${teacher.firebaseId}"
                                 data-state="${cotisationState}"
                                 title="${cotisationLabels[cotisationState]} - Cliquer pour changer l'état">
                             <i class="fas ${cotisationIcons[cotisationState]} text-sm"></i>
                         </button>
-                        <div class="mt-2">
-                            <span class="text-xs font-medium text-slate-700">${cotisationLabels[cotisationState]}</span>
-                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button onclick="deleteTeacher('${teacher.firebaseId}')" class="text-slate-300 hover:text-red-600 transition-colors p-2">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
                     </td>
                 `;
                 
@@ -377,8 +736,8 @@
         function updateStatistics() {
             const totalTeachers = teachersData.length;
             const amicaleMembers = teachersData.filter(t => t.isAmicaleMember !== false).length;
-            const upToDatePayments = Object.values(cotisationStates).filter(state => state === 'up-to-date').length;
-            const latePayments = Object.values(cotisationStates).filter(state => state === 'late').length;
+            const upToDatePayments = teachersData.filter(t => (t.cotisationState || t.state) === 'up-to-date').length;
+            const latePayments = teachersData.filter(t => (t.cotisationState || t.state) === 'late').length;
             
             document.getElementById('totalTeachers').textContent = totalTeachers;
             document.getElementById('amicaleMembers').textContent = amicaleMembers;
@@ -388,96 +747,452 @@
 
         // Fonction pour attacher les écouteurs d'événements
         function attachEventListeners() {
-            // Gestion des cases à cocher amicale
-            document.querySelectorAll('.amicale-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const teacherId = parseInt(this.dataset.teacherId);
-                    const teacher = teachersData.find(t => t.id === teacherId);
-                    if (teacher) {
-                        teacher.isAmicaleMember = this.checked;
-                        updateStatistics();
+            // Gestion des cases à cocher amicale (admin seulement)
+            if (currentUserType === 'admin') {
+                document.querySelectorAll('.amicale-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const fbId = this.dataset.fbId;
+                        const docRef = window.fs.doc(window.firebaseDB, "membres", fbId);
+                        window.fs.updateDoc(docRef, { isAmicaleMember: this.checked });
+                    });
+                });
+                
+                // Gestion des boutons de cotisation (admin seulement)
+                document.querySelectorAll('.cotisation-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const fbId = this.dataset.fbId;
+                        const currentState = this.dataset.state;
                         
-                        // Animation feedback
-                        this.parentElement.parentElement.classList.add('scale-110');
-                        setTimeout(() => {
-                            this.parentElement.parentElement.classList.remove('scale-110');
-                        }, 200);
-                    }
+                        // Cycle : up-to-date -> late -> unpaid -> up-to-date
+                        let nextState;
+                        if (currentState === 'up-to-date') nextState = 'late';
+                        else if (currentState === 'late') nextState = 'unpaid';
+                        else nextState = 'up-to-date';
+                        
+                        const docRef = window.fs.doc(window.firebaseDB, "membres", fbId);
+                        window.fs.updateDoc(docRef, { cotisationState: nextState });
+                    });
                 });
-            });
-            
-            // Gestion des boutons de cotisation
-            document.querySelectorAll('.cotisation-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const teacherId = parseInt(this.dataset.teacherId);
-                    const currentState = this.dataset.state;
-                    
-                    // Cycle : up-to-date -> late -> unpaid -> up-to-date
-                    let nextState;
-                    if (currentState === 'up-to-date') {
-                        nextState = 'late';
-                    } else if (currentState === 'late') {
-                        nextState = 'unpaid';
-                    } else {
-                        nextState = 'up-to-date';
-                    }
-                    
-                    // Mettre à jour l'état
-                    cotisationStates[teacherId] = nextState;
-                    
-                    // Mettre à jour l'interface
-                    const colors = {
-                        'up-to-date': 'bg-green-500 hover:bg-green-600',
-                        'late': 'bg-amber-500 hover:bg-amber-600',
-                        'unpaid': 'bg-red-500 hover:bg-red-600'
-                    };
-                    
-                    const labels = {
-                        'up-to-date': 'À jour',
-                        'late': 'En retard',
-                        'unpaid': 'Non payé'
-                    };
-                    
-                    const icons = {
-                        'up-to-date': 'fa-check-circle',
-                        'late': 'fa-clock',
-                        'unpaid': 'fa-times-circle'
-                    };
-                    
-                    this.className = `cotisation-btn w-10 h-10 rounded-full ${colors[nextState]} text-white transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 shadow-lg`;
-                    this.dataset.state = nextState;
-                    this.title = `${labels[nextState]} - Cliquer pour changer l'état`;
-                    this.innerHTML = `<i class="fas ${icons[nextState]} text-sm"></i>`;
-                    
-                    // Mettre à jour le label
-                    const labelSpan = this.nextElementSibling.querySelector('span');
-                    if (labelSpan) {
-                        labelSpan.textContent = labels[nextState];
-                    }
-                    
-                    updateStatistics();
-                    
-                    // Animation feedback
-                    this.classList.add('animate-pulse');
-                    setTimeout(() => {
-                        this.classList.remove('animate-pulse');
-                    }, 500);
+            } else {
+                // Pour les membres, rendre les boutons non cliquables
+                document.querySelectorAll('.cotisation-btn').forEach(btn => {
+                    btn.style.pointerEvents = 'none';
+                    btn.style.opacity = '0.7';
+                    btn.title = "Consultation uniquement - Contactez un administrateur pour modifier";
                 });
-            });
+                
+                document.querySelectorAll('.amicale-checkbox').forEach(checkbox => {
+                    checkbox.disabled = true;
+                    checkbox.style.opacity = '0.7';
+                });
+            }
+        }
+
+        // Fonction pour supprimer un enseignant
+        window.deleteTeacher = async function(fbId) {
+            if(confirm("Êtes-vous sûr de vouloir supprimer définitivement ce personnel de la liste ?")) {
+                await window.fs.deleteDoc(window.fs.doc(window.firebaseDB, "membres", fbId));
+            }
         }
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
+            // Système de Login
+            const loginOverlay = document.getElementById('loginOverlay');
+            const mainContent = document.getElementById('mainContent');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const accessType = document.getElementById('accessType').value;
+                const password = document.getElementById('password').value.trim();
+                
+                console.log("🔐 Tentative de connexion...");
+                console.log("� Type d'accès:", accessType);
+                console.log("� Mot de passe saisi:", password);
+                
+                // Vérification du mot de passe selon le type d'accès
+                const isValidPassword = password === ACCESS_PASSWORDS[accessType];
+                
+                console.log("✅ Mot de passe valide?", isValidPassword);
+                
+                if (isValidPassword) {
+                    currentUserType = accessType;
+                    console.log("🎉 Connexion réussie! Type:", currentUserType);
+                    
+                    // Masquer l'écran de login
+                    loginOverlay.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    
+                    // Configurer l'interface selon le type d'accès
+                    setupUserInterface(accessType);
+                    
+                    // Initialiser AOS
+                    AOS.refresh();
+                } else {
+                    loginError.classList.remove('hidden');
+                    document.getElementById('password').classList.add('border-red-500');
+                    document.getElementById('password').value = '';
+                }
+            });
+            
+            // Fonction pour configurer l'interface selon le type d'utilisateur
+            function setupUserInterface(userType) {
+                const adminTabs = document.getElementById('adminTabs');
+                const vueAnnuelle = document.getElementById('vueAnnuelle');
+                const toggleAddForm = document.getElementById('toggleAddForm');
+                const addMemberForm = document.getElementById('addMemberForm');
+                const checkFirebase = document.getElementById('checkFirebase');
+                
+                if (userType === 'admin') {
+                    // Afficher les onglets d'administration
+                    adminTabs.classList.remove('hidden');
+                    
+                    // Garder tous les contrôles visibles
+                    toggleAddForm.style.display = 'flex';
+                    checkFirebase.style.display = 'flex';
+                    
+                    // Cacher les actions dans le tableau pour les membres
+                    document.querySelectorAll('.action-admin-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                    
+                    console.log("🔧 Interface administrateur configurée");
+                } else {
+                    // Membre : cacher les fonctionnalités d'administration
+                    adminTabs.classList.add('hidden');
+                    vueAnnuelle.classList.add('hidden');
+                    
+                    // Cacher les boutons d'ajout et de vérification
+                    toggleAddForm.style.display = 'none';
+                    addMemberForm.classList.add('hidden');
+                    checkFirebase.style.display = 'none';
+                    
+                    // Cacher les actions dans le tableau
+                    document.querySelectorAll('.action-admin-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    
+                    console.log("👤 Interface membre configurée");
+                }
+            }
+
             AOS.init({ duration: 1000, once: true });
+            syncWithFirebase();
             
-            // Rendre le tableau initial
-            renderTable();
-            
+            // Toggle Formulaire d'ajout
+            document.getElementById('toggleAddForm').addEventListener('click', function() {
+                const form = document.getElementById('addMemberForm');
+                form.classList.toggle('hidden');
+                this.innerHTML = form.classList.contains('hidden') ? 
+                    '<i class="fas fa-plus"></i> Ajouter un membre' : 
+                    '<i class="fas fa-times"></i> Annuler';
+            });
+
+            // Soumission Nouveau Membre
+            document.getElementById('newTeacherForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const newTeacher = {
+                    name: document.getElementById('newName').value.toUpperCase(),
+                    role: document.getElementById('newRole').value.toUpperCase(),
+                    matricule: "TEMP" + Math.floor(Math.random() * 1000), // Matricule temporaire à modifier dans Firestore
+                    isAmicaleMember: true,
+                    cotisationState: 'unpaid'
+                };
+
+                await window.fs.addDoc(window.fs.collection(window.firebaseDB, "membres"), newTeacher);
+                
+                this.reset();
+                document.getElementById('addMemberForm').classList.add('hidden');
+                document.getElementById('toggleAddForm').innerHTML = '<i class="fas fa-plus"></i> Ajouter un membre';
+            });
+
             // Gestion du filtre amicale
             document.getElementById('showOnlyAmicale').addEventListener('change', function() {
                 renderTable(this.checked);
             });
-        });
-    </script>
-</body>
-</html>
+
+            // Gestion des onglets (admin seulement)
+            document.getElementById('tabCotisations').addEventListener('click', function() {
+                this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+                this.classList.remove('text-slate-600');
+                document.getElementById('tabAnnuelle').classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                document.getElementById('tabAnnuelle').classList.add('text-slate-600');
+                
+                document.getElementById('cotisations').classList.remove('hidden');
+                document.getElementById('vueAnnuelle').classList.add('hidden');
+                document.getElementById('vueMensuelle').classList.add('hidden');
+            });
+            
+            document.getElementById('tabAnnuelle').addEventListener('click', function() {
+                this.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+                this.classList.remove('text-slate-600');
+                document.getElementById('tabCotisations').classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                document.getElementById('tabCotisations').classList.add('text-slate-600');
+                
+                document.getElementById('cotisations').classList.add('hidden');
+                document.getElementById('vueMensuelle').classList.add('hidden');
+                document.getElementById('vueAnnuelle').classList.remove('hidden');
+                
+                loadAnnualView();
+            });
+            
+            // Actualisation de la vue annuelle
+            document.getElementById('refreshAnnualView').addEventListener('click', function() {
+                loadAnnualView();
+            });
+            
+            document.getElementById('yearSelect').addEventListener('change', function() {
+                loadAnnualView();
+            });
+            
+            // Actualisation de la vue mensuelle
+            if (document.getElementById('refreshMonthlyView')) {
+                document.getElementById('refreshMonthlyView').addEventListener('click', function() {
+                    loadMonthlyView();
+                });
+            }
+            if (document.getElementById('yearSelectMonthly')) {
+                document.getElementById('yearSelectMonthly').addEventListener('change', function() {
+                    loadMonthlyView();
+                });
+            }
+            if (document.getElementById('monthSelect')) {
+                document.getElementById('monthSelect').addEventListener('change', function() {
+                    loadMonthlyView();
+                });
+            }
+        
+        // Fonction pour charger la vue annuelle synthétique
+        function loadAnnualView() {
+            const year = document.getElementById('yearSelect').value;
+            console.log(`📅 Chargement vue annuelle synthétique: ${year}`);
+            
+            const tbody = document.getElementById('annualTableBody');
+            tbody.innerHTML = '';
+            
+            let totalPayments = 0;
+            let totalPossible = 0;
+            
+            teachersData.forEach((teacher, index) => {
+                const cotisationState = teacher.cotisationState || 'unpaid';
+                
+                // Simuler les données mensuelles (pour l'instant basé sur l'état général)
+                const monthlyData = [];
+                for (let i = 1; i <= 12; i++) {
+                    // Logique : si l'état général est 'up-to-date', tous les mois sont payés
+                    // Sinon, certains mois peuvent être en retard ou non payés
+                    let monthState = cotisationState;
+                    if (cotisationState === 'late') {
+                        // Si en retard, les 3 premiers mois sont payés, le reste en retard
+                        monthState = i <= 3 ? 'up-to-date' : 'late';
+                    } else if (cotisationState === 'unpaid') {
+                        // Si non payé, seulement 1 mois payé, le reste non payé
+                        monthState = i === 1 ? 'up-to-date' : 'unpaid';
+                    }
+                    monthlyData.push(monthState);
+                }
+                
+                const paidMonths = monthlyData.filter(state => state === 'up-to-date').length;
+                totalPayments += paidMonths;
+                totalPossible += 12;
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-amber-50 transition-colors duration-200';
+                
+                // Générer les cellules pour chaque mois
+                let monthCells = '';
+                monthlyData.forEach((state, monthIndex) => {
+                    const colors = {
+                        'up-to-date': 'bg-green-500',
+                        'late': 'bg-amber-500', 
+                        'unpaid': 'bg-red-500'
+                    };
+                    monthCells += `
+                        <td class="px-2 py-3 text-center">
+                            <div class="w-6 h-6 rounded-full ${colors[state]} mx-auto"></div>
+                        </td>
+                    `;
+                });
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap sticky left-0 bg-white">
+                        <div class="text-sm font-medium text-slate-900">${teacher.name}</div>
+                        <div class="text-xs text-slate-500">${teacher.matricule || 'N/A'}</div>
+                    </td>
+                    ${monthCells}
+                    <td class="px-2 py-3 text-center font-bold text-slate-900">
+                        ${paidMonths}/12
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Mettre à jour les statistiques annuelles
+            const paymentRate = totalPossible > 0 ? Math.round((totalPayments / totalPossible) * 100) : 0;
+            const unpaidTotal = totalPossible - totalPayments;
+            
+            document.getElementById('annualTotalMembers').textContent = teachersData.length;
+            document.getElementById('annualTotalPaid').textContent = totalPayments;
+            document.getElementById('annualPaymentRate').textContent = paymentRate + '%';
+            document.getElementById('annualTotalUnpaid').textContent = unpaidTotal;
+        }
+        
+        // Fonction pour charger la vue mensuelle
+        function loadMonthlyView() {
+            const year = document.getElementById('yearSelectMonthly').value;
+            const month = document.getElementById('monthSelect').value;
+            const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            
+            console.log(`📅 Chargement vue mensuelle: ${monthNames[month-1]} ${year}`);
+            
+            const tbody = document.getElementById('monthlyTableBody');
+            tbody.innerHTML = '';
+            
+            let paidCount = 0;
+            let lateCount = 0;
+            let unpaidCount = 0;
+            
+            teachersData.forEach((teacher, index) => {
+                const cotisationState = teacher.cotisationState || 'unpaid';
+                
+                // Compter les statistiques
+                if (cotisationState === 'up-to-date') paidCount++;
+                else if (cotisationState === 'late') lateCount++;
+                else unpaidCount++;
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-amber-50 transition-colors duration-200';
+                
+                const cotisationColors = {
+                    'up-to-date': 'bg-green-500 hover:bg-green-600',
+                    'late': 'bg-amber-500 hover:bg-amber-600',
+                    'unpaid': 'bg-red-500 hover:bg-red-600'
+                };
+                
+                const cotisationLabels = {
+                    'up-to-date': 'Payé',
+                    'late': 'En retard',
+                    'unpaid': 'Non payé'
+                };
+                
+                const cotisationIcons = {
+                    'up-to-date': 'fa-check-circle',
+                    'late': 'fa-clock',
+                    'unpaid': 'fa-times-circle'
+                };
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-slate-900">${teacher.name}</div>
+                        <div class="text-xs text-slate-500">${teacher.matricule || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800 border border-slate-200">
+                            ${teacher.matricule || 'N/A'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${teacher.isAmicaleMember ? 
+                            '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Oui</span>' : 
+                            '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-600">Non</span>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button class="monthly-payment-btn w-10 h-10 rounded-full ${cotisationColors[cotisationState]} text-white transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 shadow-lg"
+                                data-fb-id="${teacher.firebaseId}"
+                                data-state="${cotisationState}"
+                                data-year="${year}"
+                                data-month="${month}"
+                                title="${cotisationLabels[cotisationState]} - Cliquer pour changer l'état">
+                            <i class="fas ${cotisationIcons[cotisationState]} text-sm"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${cotisationState === 'up-to-date' ? 'bg-green-100 text-green-800' : cotisationState === 'late' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}">
+                            ${cotisationLabels[cotisationState]}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button onclick="markAsPaid('${teacher.firebaseId}', '${year}', '${month}')" class="text-green-600 hover:text-green-800 transition-colors p-2" title="Marquer comme payé">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Mettre à jour les statistiques mensuelles
+            document.getElementById('monthlyTotalMembers').textContent = teachersData.length;
+            document.getElementById('monthlyPaid').textContent = paidCount;
+            document.getElementById('monthlyLate').textContent = lateCount;
+            document.getElementById('monthlyUnpaid').textContent = unpaidCount;
+            
+            // Attacher les écouteurs pour les boutons de paiement mensuel
+            attachMonthlyPaymentListeners();
+        }
+        
+        // Fonction pour attacher les écouteurs des paiements mensuels
+        function attachMonthlyPaymentListeners() {
+            document.querySelectorAll('.monthly-payment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const fbId = this.dataset.fbId;
+                    const currentState = this.dataset.state;
+                    
+                    // Cycle : up-to-date -> late -> unpaid -> up-to-date
+                    let nextState;
+                    if (currentState === 'up-to-date') nextState = 'late';
+                    else if (currentState === 'late') nextState = 'unpaid';
+                    else nextState = 'up-to-date';
+                    
+                    const docRef = window.fs.doc(window.firebaseDB, "membres", fbId);
+                    window.fs.updateDoc(docRef, { cotisationState: nextState });
+                });
+            });
+        }
+        
+        // Fonction pour marquer comme payé
+        window.markAsPaid = async function(fbId, year, month) {
+            const docRef = window.fs.doc(window.firebaseDB, "membres", fbId);
+            await window.fs.updateDoc(docRef, { cotisationState: 'up-to-date' });
+            console.log(`💰 Membre ${fbId} marqué comme payé pour ${month}/${year}`);
+        };
+
+        // Fonction pour vérifier Firebase
+        window.checkFirebaseData = async function() {
+            console.log("🔍 Vérification des données Firebase...");
+            
+            try {
+                const querySnapshot = await window.fs.getDocs(window.fs.collection(window.firebaseDB, "membres"));
+                const firebaseData = querySnapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+                
+                console.log("📊 Données trouvées dans Firebase:", firebaseData);
+                console.log("📈 Nombre total de documents:", firebaseData.length);
+                
+                // Afficher un rapport détaillé
+                let report = `📋 RAPPORT FIREBASE\n`;
+                report += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                report += `📊 Total des membres: ${firebaseData.length}\n\n`;
+                
+                firebaseData.forEach((member, index) => {
+                    report += `${index + 1}. ${member.name}\n`;
+                    report += `   👤 Rôle: ${member.role}\n`;
+                    report += `   🆔 Matricule: ${member.matricule}\n`;
+                    report += `   💳 Cotisation: ${member.cotisationState}\n`;
+                    report += `   🏠 Amicale: ${member.isAmicaleMember ? 'Oui' : 'Non'}\n\n`;
+                });
+                
+                alert(report);
+                return firebaseData;
+                
+            } catch (error) {
+                console.error("❌ Erreur lors de la vérification:", error);
+                alert(`❌ Erreur Firebase: ${error.message}\n\nVérifiez que:\n1. Firestore est activé\n2. Les règles sont correctes\n3. Vous êtes connecté à Internet`);
+                return [];
+            }
+      
